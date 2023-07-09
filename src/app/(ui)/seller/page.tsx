@@ -1,6 +1,6 @@
-import NewProduct from '@/components/Sellers/NewProduct';
-import SellerNotAuthenticated from '@/components/Sellers/NotAuthenticated';
-import Products from '@/components/Sellers/Products';
+import NewProduct from '@/components/SellersPage/NewProduct';
+import SellerNotAuthenticated from '@/components/SellersPage/NotAuthenticated';
+import Products from '@/components/SellersPage/Products';
 import { authOptions } from '@/utils/auth';
 import { getServerSession } from 'next-auth';
 import Head from 'next/head';

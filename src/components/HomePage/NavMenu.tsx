@@ -3,8 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Disclosure } from '@headlessui/react';
-import { IsAuth } from '@/components/Shared/AuthCheck';
-import { SignInButton, SignOutButton } from '@/components/Shared/Buttons';
+import { SignInButton } from '@/components/HomePage/SignInButton';
 
 export default function NavMenu() {
   return (
@@ -37,11 +36,6 @@ export default function NavMenu() {
 
       <div>
         <SignInButton />
-        <SignOutButton />
-        {/* <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Sign In</button>
-        <IsAuth>
-          <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Sign Out</button>
-        </IsAuth> */}
       </div>
     </Disclosure>
   );
