@@ -1,0 +1,133 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider          = "postgresql"
+  url               = env("POSTGRES_PRISMA_URL")
+  directUrl         = env("POSTGRES_PRISMA_DIRECT_URL")
+  shadowDatabaseUrl = env("POSTGRES_URL_NON_POOLING")
+}
+
+model Account {
+  id                       String  @id @default(cuid())
+  userId                   String
+  type                     String
+  provider                 String
+  providerAccountId        String
+  refresh_token            String?
+  access_token             String?
+  expires_at               Int?
+  token_type               String?
+  scope                    String?
+  id_token                 String?
+  session_state            String?
+  refresh_token_expires_in Int?
+  user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String?   @unique
+  emailVerified DateTime?
+  name          String?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  UserSeller    UserSeller[]
+  UserRecycler  UserRecycler[]
+  Coupons       Coupon[]
+}
+
+model Recycler {
+  id          String        @id @default(cuid())
+  name        String
+  address     String
+  url         String? 
+  isApproved  Boolean
+  UserRecycler UserRecycler[]
+  Coupons     Coupon[]
+}
+
+model Seller {
+  id         String      @id @default(cuid())
+  name       String
+  url        String?
+  UserSeller UserSeller[]
+}
+
+model UserSeller {
+  userId  String
+  sellerId String
+  role    Role
+  User    User    @relation(fields: [userId], references: [id])
+  Seller  Seller  @relation(fields: [sellerId], references: [id])
+
+  @@id([userId, sellerId])
+}
+
+model UserRecycler {
+  userId    String
+  recyclerId String
+  role      Role
+  User      User      @relation(fields: [userId], references: [id])
+  Recycler  Recycler  @relation(fields: [recyclerId], references: [id])
+
+  @@id([userId, recyclerId])
+}
+
+model Product {
+  id               String   @id @default(cuid())
+  name             String
+  quantity         Int
+  validFrom        DateTime @db.Timestamptz
+  validTo          DateTime @db.Timestamptz
+  couponTerms      String
+  Coupons          Coupon[]
+}
+
+model Coupon {
+  code          String    @id
+  productId     String
+  userId        String?
+  recyclerId    String?
+  status        Status
+  dateCreated   DateTime  @default(now()) @db.Timestamptz
+  dateAssigned  DateTime? @db.Timestamptz
+  dateRecycled  DateTime? @db.Timestamptz
+  dateRefunded  DateTime? @db.Timestamptz
+  Product       Product   @relation(fields: [productId], references: [id])
+  User          User?     @relation(fields: [userId], references: [id])
+  Recycler      Recycler? @relation(fields: [recyclerId], references: [id])
+}
+
+enum Role {
+  Owner
+  Editor
+  Viewer
+}
+
+enum Status {
+  New
+  Assigned
+  Recycled
+  Refunded
+}
