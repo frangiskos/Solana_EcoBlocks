@@ -5,6 +5,10 @@ import GithubProvider from 'next-auth/providers/github';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
 import { prisma } from '@/lib/prisma';
+import { Account, User } from '@prisma/client';
+
+const THIRTY_DAYS = 30 * 24 * 60 * 60; // 30 days in seconds for session max age
+const THIRTY_MINUTES = 30 * 60; // 30 minutes in seconds for session update interval
 
 export const authOptions: NextAuthOptions = {
   // session: {
@@ -57,4 +61,52 @@ export const authOptions: NextAuthOptions = {
     //   }
     // },
   ],
+  session: {
+    strategy: 'jwt', // Use JWT (JSON Web Token) as session strategy
+    maxAge: THIRTY_DAYS, // Set session max age to 30 days
+    updateAge: THIRTY_MINUTES, // Update session age every 30 minutes
+  },
+  callbacks: {
+    async signIn(params) {
+      console.log('signIn', JSON.stringify(params, null, 2));
+      return true;
+    },
+    async jwt({ token, user, account }) {
+      if (account?.access_token && user) {
+        await updateAccount(account as Account, user as User);
+        token.access_token = account.access_token;
+        token.token_type = account.token_type;
+      }
+      const mappedUser = user ?? token?.user;
+
+      //trying to pass user information and token to the session
+      return {
+        token: token?.token ?? token,
+        user: mappedUser,
+      };
+    },
+    async session({ token, session }) {
+      const mappedToken = token?.token ?? token;
+      const mappedUser = token?.user ?? session.user;
+
+      return { ...session, token: mappedToken, user: mappedUser };
+    },
+  },
+  pages: {
+    signIn: '/auth/login', // Set custom URL for sign-in page
+  },
+};
+
+const updateAccount = async (account: Account, user: User) => {
+  const dbAccount = await prisma.account.findFirst({ where: { userId: user.id } });
+  if (!dbAccount) return;
+
+  await prisma.account.update({
+    where: {
+      id: dbAccount.id,
+    },
+    data: {
+      ...account,
+    },
+  });
 };
