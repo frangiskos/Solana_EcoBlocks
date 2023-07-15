@@ -6,7 +6,7 @@ import Image from 'next/image';
 export function SignInButton() {
   const { data: session, status } = useSession();
 
-  if (status === 'loading') {
+  if (status === 'loading' || window.location.pathname === '/auth/login') {
     return (
       <button className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded" disabled>
         ...

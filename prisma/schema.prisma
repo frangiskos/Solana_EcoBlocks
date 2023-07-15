@@ -70,6 +70,8 @@ model Recycler {
 model Seller {
   id         String      @id @default(cuid())
   name       String
+  description String?
+  address    String?
   url        String?
   UserSeller UserSeller[]
 }

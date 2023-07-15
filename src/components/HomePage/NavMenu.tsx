@@ -12,10 +12,10 @@ export default function NavMenu() {
         <Link href={'/'}>
           <Image
             src="/logo.png" // Route of the image file
-            width={260}
-            height={1}
-            alt="NextSpace Logo"
-            className="h-10"
+            width={160}
+            height={20}
+            alt="EcoBlocks Logo"
+            className="h-5"
           />
         </Link>
       </div>

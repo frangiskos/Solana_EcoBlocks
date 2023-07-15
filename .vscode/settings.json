@@ -1,5 +1,6 @@
 {
   "typescript.tsdk": "node_modules\\typescript\\lib",
   "typescript.enablePromptUseWorkspaceTsdk": true,
-  "prisma.fileWatcher": false
+  "prisma.fileWatcher": false,
+  "cSpell.words": ["clsx", "daisyui", "ecoblocks", "flowbite"]
 }
