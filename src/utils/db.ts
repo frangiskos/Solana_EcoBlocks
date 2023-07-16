@@ -27,6 +27,7 @@ export class db {
 
   static recyclers = {
     getUserRecyclers: this.getUserRecyclers,
+    recyclerNameExists: this.recyclerNameExists,
     create: this.createRecycler,
     update: this.updateRecycler,
     delete: this.deleteRecycler,
@@ -394,6 +395,16 @@ export class db {
         },
       },
     });
+  }
+
+  private static async recyclerNameExists(name: string): Promise<boolean> {
+    const recycler = await prisma.recycler.findFirst({
+      where: {
+        name,
+      },
+    });
+
+    return !!recycler;
   }
 
   private static async createRecycler(

@@ -5,8 +5,6 @@ export default function HomePage() {
       <p className="font-light text-2xl">Recycle your devices responsibly and earn rewards</p>
 
       <div className="h-64 w-64 bg-green-300 rounded-full"></div>
-
-      <button className="bg-white text-green-600 font-semibold py-2 px-5 rounded-full">Get started</button>
     </div>
   );
 }

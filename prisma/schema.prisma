@@ -63,6 +63,7 @@ model Recycler {
   createdAt   DateTime      @default(now()) @db.Timestamptz
   updatedAt   DateTime?     @updatedAt @db.Timestamptz
   name        String
+  description String?
   address     String
   url         String? 
   UserRecycler UserRecycler[]

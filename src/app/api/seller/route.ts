@@ -5,7 +5,7 @@ import { removeUndefined } from '@/utils/utils';
 import { NextRequest, NextResponse } from 'next/server';
 import { fromZodError } from 'zod-validation-error';
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   const user = await getUserFromSession();
   if (!user) return NextResponse.json({}, { status: 401 });
 

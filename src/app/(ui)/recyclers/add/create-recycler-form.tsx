@@ -3,23 +3,23 @@
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CreateSellerFormValue, createSellerSchema } from '@/utils/form-validations';
+import { CreateRecyclerFormValue, createRecyclerSchema } from '@/utils/form-validations';
 import Input from '@/components/ui/Input';
 import Textarea from '@/components/ui/Textarea';
 
-export type SellerFormSchemaProps = {
-  values?: Partial<CreateSellerFormValue>;
-  onCreateRequest: (values: CreateSellerFormValue) => unknown;
+export type RecyclerFormSchemaProps = {
+  values?: Partial<CreateRecyclerFormValue>;
+  onCreateRequest: (values: CreateRecyclerFormValue) => unknown;
 };
 
-const CreateSellerForm: React.FC<SellerFormSchemaProps> = ({ values, onCreateRequest }) => {
+const CreateRecyclerForm: React.FC<RecyclerFormSchemaProps> = ({ values, onCreateRequest }) => {
   const {
     register,
     handleSubmit,
     formState: { errors },
     setValue,
     setError,
-  } = useForm<CreateSellerFormValue>({ resolver: zodResolver(createSellerSchema) });
+  } = useForm<CreateRecyclerFormValue>({ resolver: zodResolver(createRecyclerSchema) });
 
   useEffect(() => {
     if (values) {
@@ -36,13 +36,13 @@ const CreateSellerForm: React.FC<SellerFormSchemaProps> = ({ values, onCreateReq
     console.log('handleOnChange', changeEvent);
   }
 
-  const onSubmit = async (data: CreateSellerFormValue) => {
+  const onSubmit = async (data: CreateRecyclerFormValue) => {
     console.log('onSubmit', data, isSubmitting);
     if (isSubmitting) {
       onCreateRequest(data);
     } else {
-      // Check if seller name is already taken
-      const sellerNameExists = await fetch(`/api/seller/nameExists`, {
+      // Check if recycler name is already taken
+      const nameExists = await fetch(`/api/recyclers/nameExists`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -57,10 +57,10 @@ const CreateSellerForm: React.FC<SellerFormSchemaProps> = ({ values, onCreateReq
         .finally(() => {
           setIsSubmitting(false);
         });
-      if (sellerNameExists.exists) {
+      if (nameExists.exists) {
         setError('name', {
           type: 'manual',
-          message: 'Business name is already taken',
+          message: 'Name is already taken',
         });
       } else {
         onCreateRequest(data);
@@ -73,7 +73,7 @@ const CreateSellerForm: React.FC<SellerFormSchemaProps> = ({ values, onCreateReq
       <div className="grid grid-cols-2 gap-x-20">
         <Input
           id="name"
-          label="What is your business name?"
+          label="What is your recycling center name?"
           placeholder="Type here"
           required={true}
           disabled={isSubmitting}
@@ -99,7 +99,7 @@ const CreateSellerForm: React.FC<SellerFormSchemaProps> = ({ values, onCreateReq
         />
         <Textarea
           id="description"
-          label="Tell us about your company"
+          label="Tell us about your recycling center"
           placeholder="Type here"
           disabled={isSubmitting}
           {...register('description')}
@@ -109,7 +109,7 @@ const CreateSellerForm: React.FC<SellerFormSchemaProps> = ({ values, onCreateReq
         <div className="col-span-2">
           <button className="btn" disabled={isSubmitting} type="submit">
             {isSubmitting && <span className="loading loading-spinner"></span>}
-            Add Business
+            Add Recycling Center
           </button>
         </div>
       </div>
@@ -117,4 +117,4 @@ const CreateSellerForm: React.FC<SellerFormSchemaProps> = ({ values, onCreateReq
   );
 };
 
-export default CreateSellerForm;
+export default CreateRecyclerForm;
