@@ -5,6 +5,7 @@ import Section from '@/components/Shared/Section';
 import { Seller } from '@prisma/client';
 import Head from 'next/head';
 import Link from 'next/link';
+import { XMarkIcon } from '@heroicons/react/20/solid';
 
 export const dynamic = 'force-dynamic';
 
@@ -71,20 +72,7 @@ const SellerList: React.FC<SellerListProps> = ({ sellers }) => {
                     </th>
                     <th>
                       <button className="btn btn-ghost btn-xs" onClick={() => onDelete(seller.id)}>
-                        delete
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-5 w-5 text-red-500"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            // eslint-disable-next-line max-len
-                            d="M10.707 10l4.147-4.146a.5.5 0 10-.708-.708L10 9.293 5.854 5.147a.5.5 0 00-.708.708L9.293 10l-4.147 4.146a.5.5 0 10.708.708L10 10.707l4.146 4.147a.5.5 0 10.708-.708L10.707 10z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
+                        <XMarkIcon className="h-6 w-6 text-red-500" />
                       </button>
                     </th>
                   </tr>
