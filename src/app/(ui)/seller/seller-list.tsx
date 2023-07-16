@@ -70,7 +70,10 @@ const SellerList: React.FC<SellerListProps> = ({ sellers, onSellerRemove }) => {
                     </td>
                     <td>{seller.description}</td>
                     <th>
-                      <button className="btn btn-ghost btn-xs">products</button>
+                      <Link href={`/seller/${seller.id}/products`} className="btn btn-ghost btn-xs">
+                        products
+                      </Link>
+                      {/* <button className="btn btn-ghost btn-xs">products</button> */}
                     </th>
                     <th>
                       <button className="btn btn-ghost btn-xs" onClick={() => onDelete(seller.id)}>

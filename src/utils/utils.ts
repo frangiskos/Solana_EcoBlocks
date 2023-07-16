@@ -30,3 +30,9 @@ export function removeUndefined<T extends Record<string, unknown>>(obj: T): Requ
   Object.keys(copy).forEach((key) => (copy[key as keyof T] === undefined ? delete copy[key as keyof T] : {}));
   return copy as Required<T>;
 }
+
+export function formatDate(date: Date) {
+  // var formattedDate = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium' }).format(date);
+  // var formattedDate = date.toLocaleDateString('en-US',{ year: 'numeric', month: 'short', day: 'numeric' });
+  return date.toLocaleDateString();
+}
