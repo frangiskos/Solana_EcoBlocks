@@ -11,12 +11,15 @@ export const dynamic = 'force-dynamic';
 
 export type SellerListProps = {
   sellers: Seller[];
+  onSellerRemove: (id: string) => void;
 };
 
-const SellerList: React.FC<SellerListProps> = ({ sellers }) => {
+const SellerList: React.FC<SellerListProps> = ({ sellers, onSellerRemove }) => {
   const onDelete = (id: string) => {
     fetch(`/api/seller/${id}`, {
       method: 'DELETE',
+    }).then(() => {
+      onSellerRemove(id);
     });
   };
 
@@ -27,7 +30,6 @@ const SellerList: React.FC<SellerListProps> = ({ sellers }) => {
       </Head>
       <Section>
         <AppCard>
-          <h1>Sellers</h1>
           <Link
             href="/seller/add"
             type="button"
