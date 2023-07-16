@@ -1,11 +1,9 @@
-import type { Coupon as PrismaCoupon, Product as PrismaProduct, Seller as PrismaSeller } from '@prisma/client';
+import type { Coupon, Product, Seller } from '@prisma/client';
 
-interface NestedCoupon extends PrismaCoupon {
-  Product: Product;
+interface NestedCoupon extends Coupon {
+  Product: NestedProduct;
 }
 
-interface Product extends PrismaProduct {
+interface NestedProduct extends Product {
   Seller: Seller;
 }
-
-interface Seller extends PrismaSeller {}

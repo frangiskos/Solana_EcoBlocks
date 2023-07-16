@@ -42,7 +42,7 @@ export const createProductSchema = z.object({
 });
 export type CreateProductFormValue = z.infer<typeof createProductSchema>;
 
-export const assignCouponSchema = z.object({
+export const handleCouponSchema = z.object({
   coupon: z.string().trim().length(10, 'Coupon code must be 10 characters long'),
 });
-export type AssignCouponFormValue = z.infer<typeof createSellerSchema>;
+export type HandleCouponFormValue = z.infer<typeof handleCouponSchema>;

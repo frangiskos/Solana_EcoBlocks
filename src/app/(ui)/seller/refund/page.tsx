@@ -4,14 +4,14 @@ import { HandleCouponFormValue } from '@/utils/form-validations';
 import { useRouter } from 'next/navigation';
 import AppCard from '@/components/Shared/AppCard';
 import Section from '@/components/Shared/Section';
-import AssignCouponForm from './assign-coupon-form';
+import RefundCouponForm from './refund-coupon-form';
 
-export default function CouponAdd() {
+export default function CouponRefund() {
   const router = useRouter();
 
-  const onCreateRequest = (coupon: HandleCouponFormValue) => {
-    console.log('onCreateRequest', coupon);
-    fetch(`/api/consumers/coupons/${coupon.coupon}`, {
+  const onRefundRequest = (coupon: HandleCouponFormValue) => {
+    console.log('onRefundRequest', coupon);
+    fetch(`/api/seller/refund/${coupon.coupon}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -29,7 +29,7 @@ export default function CouponAdd() {
   return (
     <Section>
       <AppCard>
-        <AssignCouponForm onCreateRequest={onCreateRequest} />
+        <RefundCouponForm onRefundRequest={onRefundRequest} />
       </AppCard>
     </Section>
   );

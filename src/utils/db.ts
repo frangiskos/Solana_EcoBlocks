@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { NestedCoupon } from '@/types';
-import { Coupon, Product, Seller, User } from '@prisma/client';
+import { Coupon, Product, Recycler, Seller, User } from '@prisma/client';
 
 export class db {
   static sellers = {
@@ -9,6 +9,7 @@ export class db {
     create: this.createSeller,
     update: this.updateSeller,
     delete: this.deleteSeller,
+    refundCoupon: this.refundCoupon,
   };
 
   static products = {
@@ -21,7 +22,15 @@ export class db {
   static consumers = {
     getCoupons: this.getCoupons,
     assignCoupon: this.assignCoupon,
-    removeCoupon: this.removeCoupon,
+    unassignCoupon: this.unassignCoupon,
+  };
+
+  static recyclers = {
+    getUserRecyclers: this.getUserRecyclers,
+    create: this.createRecycler,
+    update: this.updateRecycler,
+    delete: this.deleteRecycler,
+    recycleCoupon: this.recycleCoupon,
   };
 
   private static async getUserSellers(user: User): Promise<Seller[]> {
@@ -118,6 +127,49 @@ export class db {
     return await prisma.seller.delete({
       where: {
         id: sellerId,
+      },
+    });
+  }
+
+  private static async refundCoupon(couponCode: string, user: User): Promise<Coupon> {
+    const coupon = await prisma.coupon.findFirst({
+      where: {
+        code: couponCode,
+      },
+      include: {
+        Product: {
+          include: {
+            Seller: {
+              include: {
+                UserSeller: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!coupon) {
+      throw new Error('Coupon not found');
+    }
+
+    const sellerUser = await prisma.userSeller.findFirst({
+      where: {
+        userId: user.id,
+        sellerId: coupon.Product.sellerId,
+      },
+    });
+
+    if (!sellerUser) {
+      throw new Error('User does not have access to refund coupon from this seller');
+    }
+
+    return await prisma.coupon.update({
+      where: {
+        code: coupon.code,
+      },
+      data: {
+        refundedAt: new Date(),
       },
     });
   }
@@ -302,7 +354,7 @@ export class db {
     });
   }
 
-  private static async removeCoupon(code: string, user: User): Promise<Coupon> {
+  private static async unassignCoupon(code: string, user: User): Promise<Coupon> {
     const coupon = await prisma.coupon.findFirst({
       where: {
         code,
@@ -325,6 +377,120 @@ export class db {
         userId: null,
         status: 'New',
         assignedAt: null,
+      },
+    });
+  }
+
+  /**
+   * RECYCLERS
+   */
+  private static async getUserRecyclers(user: User): Promise<Recycler[]> {
+    return await prisma.recycler.findMany({
+      where: {
+        UserRecycler: {
+          some: {
+            userId: user.id,
+          },
+        },
+      },
+    });
+  }
+
+  private static async createRecycler(
+    recycler: Omit<Recycler, 'id' | 'createdAt' | 'updatedAt'>,
+    user: User
+  ): Promise<Recycler> {
+    return await prisma.recycler.create({
+      data: {
+        ...recycler,
+        UserRecycler: {
+          create: {
+            userId: user.id,
+            role: 'Owner',
+          },
+        },
+      },
+    });
+  }
+
+  private static async updateRecycler(
+    recycler: Partial<Omit<Recycler, 'createdAt' | 'updatedAt'>>,
+    user: User
+  ): Promise<Recycler> {
+    const userRecycler = await prisma.userRecycler.findFirst({
+      where: {
+        userId: user.id,
+        recyclerId: recycler.id,
+      },
+    });
+
+    if (!userRecycler) {
+      throw new Error('User is not a recycler owner');
+    }
+
+    const { id, ...recyclerData } = recycler;
+    return await prisma.recycler.update({
+      where: {
+        id,
+      },
+      data: {
+        ...recyclerData,
+        updatedAt: new Date(),
+      },
+    });
+  }
+
+  private static async deleteRecycler(recyclerId: string, user: User): Promise<Recycler> {
+    const recycler = await prisma.recycler.findFirst({
+      where: {
+        id: recyclerId,
+      },
+    });
+
+    if (!recycler) {
+      throw new Error('Recycler not found');
+    }
+
+    const userRecycler = await prisma.userRecycler.findFirst({
+      where: {
+        userId: user.id,
+        recyclerId: recycler.id,
+      },
+    });
+
+    if (!userRecycler) {
+      throw new Error('User is not a recycler owner');
+    }
+
+    return await prisma.recycler.delete({
+      where: {
+        id: recyclerId,
+      },
+    });
+  }
+
+  private static async recycleCoupon(code: string, user: User): Promise<Coupon> {
+    const coupon = await prisma.coupon.findFirst({
+      where: {
+        code,
+      },
+    });
+
+    if (!coupon) {
+      throw new Error('Coupon does not exist');
+    }
+
+    if (coupon.userId !== user.id) {
+      throw new Error('Coupon is not assigned to user');
+    }
+
+    return prisma.coupon.update({
+      where: {
+        code,
+      },
+      data: {
+        status: 'Recycled',
+        recycledAt: new Date(),
       },
     });
   }

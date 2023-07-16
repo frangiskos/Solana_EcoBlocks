@@ -23,13 +23,13 @@ export default function NavMenu() {
       <div className="space-x-4">
         <ul className="flex justify-between items-center space-x-4">
           <li className="text-white">
-            <Link href={'/seller'}>Seller</Link>
+            <Link href={'/seller'}>Sellers</Link>
           </li>
           <li className="text-white">
-            <Link href={'/consumer'}>Consumer</Link>
+            <Link href={'/consumers'}>Consumers</Link>
           </li>
           <li className="text-white">
-            <Link href={'/recycler'}>Recycler</Link>
+            <Link href={'/recyclers'}>Recyclers</Link>
           </li>
         </ul>
       </div>
