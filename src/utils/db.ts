@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma';
-import { Seller, User } from '@prisma/client';
+import { Product, Seller, User } from '@prisma/client';
 
 export class db {
   static sellers = {
@@ -8,6 +8,13 @@ export class db {
     create: this.createSeller,
     update: this.updateSeller,
     delete: this.deleteSeller,
+  };
+
+  static products = {
+    getBusinessProducts: this.getBusinessProducts,
+    create: this.createProduct,
+    update: this.updateProduct,
+    delete: this.deleteProduct,
   };
 
   private static async getUserSellers(user: User): Promise<Seller[]> {
@@ -38,7 +45,10 @@ export class db {
     return { exists: !!seller };
   }
 
-  private static async createSeller(seller: Omit<Seller, 'id'>, user: User): Promise<Seller> {
+  private static async createSeller(
+    seller: Omit<Seller, 'id' | 'createdAt' | 'updatedAt'>,
+    user: User
+  ): Promise<Seller> {
     return await prisma.seller.create({
       data: {
         name: seller.name,
@@ -55,7 +65,7 @@ export class db {
     });
   }
 
-  private static async updateSeller(seller: Seller, user: User): Promise<Seller> {
+  private static async updateSeller(seller: Omit<Seller, 'createdAt' | 'updatedAt'>, user: User): Promise<Seller> {
     const sellerUsers = await prisma.userSeller.findMany({
       where: {
         userId: user.id,
@@ -65,18 +75,17 @@ export class db {
     });
 
     if (!sellerUsers.length) {
-      // throw new Error('User is not a seller owner');
-      return seller;
+      throw new Error('User is not a seller owner');
     }
 
     const { id, ...sellerData } = seller;
-    sellerData.updatedAt = new Date();
     return await prisma.seller.update({
       where: {
         id,
       },
       data: {
         ...sellerData,
+        updatedAt: new Date(),
       },
     });
   }
@@ -102,6 +111,131 @@ export class db {
     return await prisma.seller.delete({
       where: {
         id: sellerId,
+      },
+    });
+  }
+
+  private static async getBusinessProducts(sellerId: string, user: User): Promise<Product[]> {
+    const sellerUser = await prisma.userSeller.findFirst({
+      where: {
+        userId: user.id,
+        sellerId: sellerId,
+      },
+    });
+
+    if (!sellerUser) {
+      // throw new Error('User is not a seller owner');
+      return [];
+    }
+
+    return await prisma.product.findMany({
+      where: {
+        sellerId,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
+
+  private static async createProduct(
+    product: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'quantity'>,
+    coupons: string[],
+    user: User
+  ): Promise<Product> {
+    const sellerUser = await prisma.userSeller.findFirst({
+      where: {
+        userId: user.id,
+        sellerId: product.sellerId,
+      },
+    });
+
+    if (!sellerUser) {
+      throw new Error('User is not a seller owner');
+    }
+
+    return await prisma.product.create({
+      data: {
+        name: product.name,
+        quantity: coupons.length,
+        validFrom: product.validFrom || new Date(),
+        validTo: product.validTo,
+        couponTerms: product.couponTerms,
+        sellerId: product.sellerId,
+        Coupons: {
+          createMany: {
+            data: coupons.map((coupon) => ({
+              code: coupon,
+              status: 'New',
+            })),
+          },
+        },
+      },
+    });
+  }
+
+  private static async updateProduct(
+    product: Omit<Product, 'createdAt' | 'updatedAt' | 'quantity'>,
+    coupons: string[],
+    user: User
+  ): Promise<Product> {
+    const sellerUser = await prisma.userSeller.findFirst({
+      where: {
+        userId: user.id,
+        sellerId: product.sellerId,
+      },
+    });
+
+    if (!sellerUser) {
+      throw new Error('User is not a seller owner');
+    }
+
+    const { id, ...productData } = product;
+    return await prisma.product.update({
+      where: {
+        id,
+      },
+      data: {
+        ...productData,
+        updatedAt: new Date(),
+        quantity: { increment: coupons.length },
+        Coupons: {
+          createMany: {
+            data: coupons.map((coupon) => ({
+              code: coupon,
+              status: 'New',
+            })),
+          },
+        },
+      },
+    });
+  }
+
+  private static async deleteProduct(productId: string, user: User): Promise<Product> {
+    const product = await prisma.product.findFirst({
+      where: {
+        id: productId,
+      },
+    });
+
+    if (!product) {
+      throw new Error('Product not found');
+    }
+
+    const sellerUser = await prisma.userSeller.findFirst({
+      where: {
+        userId: user.id,
+        sellerId: product.sellerId,
+      },
+    });
+
+    if (!sellerUser) {
+      throw new Error('User is not a seller owner');
+    }
+
+    return await prisma.product.delete({
+      where: {
+        id: productId,
       },
     });
   }
