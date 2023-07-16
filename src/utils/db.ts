@@ -6,6 +6,8 @@ export class db {
     getUserSellers: this.getUserSellers,
     sellerNameExists: this.sellerNameExists,
     create: this.createSeller,
+    update: this.updateSeller,
+    delete: this.deleteSeller,
   };
 
   private static async getUserSellers(user: User): Promise<Seller[]> {
@@ -17,10 +19,13 @@ export class db {
           },
         },
       },
+      orderBy: {
+        createdAt: 'desc',
+      },
     });
   }
 
-  private static async sellerNameExists(name: string, id?: string): Promise<boolean> {
+  private static async sellerNameExists(name: string, id?: string): Promise<{ exists: boolean }> {
     const seller = await prisma.seller.findFirst({
       where: {
         name,
@@ -30,7 +35,7 @@ export class db {
       },
     });
 
-    return !!seller;
+    return { exists: !!seller };
   }
 
   private static async createSeller(seller: Omit<Seller, 'id'>, user: User): Promise<Seller> {
@@ -46,6 +51,57 @@ export class db {
             role: 'Owner',
           },
         },
+      },
+    });
+  }
+
+  private static async updateSeller(seller: Seller, user: User): Promise<Seller> {
+    const sellerUsers = await prisma.userSeller.findMany({
+      where: {
+        userId: user.id,
+        sellerId: seller.id,
+        role: 'Owner',
+      },
+    });
+
+    if (!sellerUsers.length) {
+      // throw new Error('User is not a seller owner');
+      return seller;
+    }
+
+    const { id, ...sellerData } = seller;
+    sellerData.updatedAt = new Date();
+    return await prisma.seller.update({
+      where: {
+        id,
+      },
+      data: {
+        ...sellerData,
+      },
+    });
+  }
+
+  private static async deleteSeller(sellerId: string, user: User): Promise<Seller> {
+    const sellerUser = await prisma.userSeller.findFirst({
+      where: {
+        userId: user.id,
+        sellerId: sellerId,
+      },
+    });
+
+    if (!sellerUser) {
+      // throw new Error('User is not a seller owner');
+      const seller = await prisma.seller.findFirst({
+        where: {
+          id: sellerId,
+        },
+      });
+      return seller!;
+    }
+
+    return await prisma.seller.delete({
+      where: {
+        id: sellerId,
       },
     });
   }

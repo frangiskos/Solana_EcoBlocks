@@ -1,20 +1,36 @@
+'use client';
+
 import { CreateSellerFormValue } from '@/utils/form-validations';
 import CreateSellerForm from './create-seller-form';
-import { db } from '@/utils/db';
-import { getUserFromSession } from '@/utils/session';
-import { Seller } from '@prisma/client';
+import { useRouter } from 'next/navigation';
+import AppCard from '@/components/Shared/AppCard';
+import Section from '@/components/Shared/Section';
 
-export default async function SellerAdd() {
-  const user = await getUserFromSession();
-  if (!user) return null;
+export default function SellerAdd() {
+  const router = useRouter();
 
   const onCreateRequest = (seller: CreateSellerFormValue) => {
-    const response = db.sellers.create(seller as unknown as Seller, user);
-    console.log(response);
+    console.log('onCreateRequest', seller);
+    fetch(`/api/seller`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(seller),
+    })
+      .then((res) => res.json())
+      .then((json) => {
+        console.log('json', json);
+      })
+      .finally(() => {
+        router.push('/seller');
+      });
   };
   return (
-    <>
-      <CreateSellerForm onCreateRequest={onCreateRequest} />
-    </>
+    <Section>
+      <AppCard>
+        <CreateSellerForm onCreateRequest={onCreateRequest} />
+      </AppCard>
+    </Section>
   );
 }

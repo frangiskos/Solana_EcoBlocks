@@ -1,7 +1,7 @@
 import clsx from 'clsx';
 import React, { forwardRef } from 'react';
 
-interface InputProps extends React.HTMLProps<HTMLInputElement> {
+interface TextareaProps extends React.HTMLProps<HTMLTextAreaElement> {
   name: string;
   id: string;
   type?: string;
@@ -13,7 +13,7 @@ interface InputProps extends React.HTMLProps<HTMLInputElement> {
   disabled?: boolean;
 }
 
-const Input = forwardRef<HTMLInputElement, InputProps>(
+const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
   (
     {
       name,
@@ -38,17 +38,16 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             </span>
           </label>
         )}
-        <input
-          type={type}
+        <textarea
           id={id}
           name={name}
-          className={clsx('input input-bordered w-full max-w-xs', error && 'input-error')}
+          className={clsx('textarea textarea-bordered h-24', error && 'textarea-error')}
           placeholder={placeholder}
           required={required}
           disabled={disabled}
           ref={ref}
           {...otherProps}
-        ></input>
+        ></textarea>
         {error && (
           <label className="label">
             <span className="label-text-alt">{error}</span>
@@ -59,5 +58,5 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
   )
 );
 
-Input.displayName = 'Input';
-export default Input;
+Textarea.displayName = 'Textarea';
+export default Textarea;

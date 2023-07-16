@@ -46,6 +46,7 @@ model VerificationToken {
 
 model User {
   id            String    @id @default(cuid())
+  createdAt     DateTime  @default(now()) @db.Timestamptz
   email         String?   @unique
   emailVerified DateTime?
   name          String?
@@ -59,6 +60,8 @@ model User {
 
 model Recycler {
   id          String        @id @default(cuid())
+  createdAt   DateTime      @default(now()) @db.Timestamptz
+  updatedAt   DateTime?     @updatedAt @db.Timestamptz
   name        String
   address     String
   url         String? 
@@ -69,6 +72,8 @@ model Recycler {
 
 model Seller {
   id         String      @id @default(cuid())
+  createdAt  DateTime    @default(now()) @db.Timestamptz
+  updatedAt  DateTime?   @updatedAt @db.Timestamptz
   name       String
   description String?
   address    String?
@@ -79,9 +84,10 @@ model Seller {
 model UserSeller {
   userId  String
   sellerId String
+  createdAt DateTime @default(now()) @db.Timestamptz
   role    Role
-  User    User    @relation(fields: [userId], references: [id])
-  Seller  Seller  @relation(fields: [sellerId], references: [id])
+  User    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Seller  Seller  @relation(fields: [sellerId], references: [id], onDelete: Cascade)
 
   @@id([userId, sellerId])
 }
@@ -89,15 +95,18 @@ model UserSeller {
 model UserRecycler {
   userId    String
   recyclerId String
+  createdAt DateTime @default(now()) @db.Timestamptz
   role      Role
-  User      User      @relation(fields: [userId], references: [id])
-  Recycler  Recycler  @relation(fields: [recyclerId], references: [id])
+  User      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Recycler  Recycler  @relation(fields: [recyclerId], references: [id], onDelete: Cascade)
 
   @@id([userId, recyclerId])
 }
 
 model Product {
   id               String   @id @default(cuid())
+  createdAt        DateTime @default(now()) @db.Timestamptz
+  updatedAt        DateTime? @updatedAt @db.Timestamptz
   name             String
   quantity         Int
   validFrom        DateTime @db.Timestamptz
@@ -112,13 +121,13 @@ model Coupon {
   userId        String?
   recyclerId    String?
   status        Status
-  dateCreated   DateTime  @default(now()) @db.Timestamptz
-  dateAssigned  DateTime? @db.Timestamptz
-  dateRecycled  DateTime? @db.Timestamptz
-  dateRefunded  DateTime? @db.Timestamptz
-  Product       Product   @relation(fields: [productId], references: [id])
-  User          User?     @relation(fields: [userId], references: [id])
-  Recycler      Recycler? @relation(fields: [recyclerId], references: [id])
+  createdAt     DateTime  @default(now()) @db.Timestamptz
+  assignedAt    DateTime? @db.Timestamptz
+  recycledAt    DateTime? @db.Timestamptz
+  refundedAt    DateTime? @db.Timestamptz
+  Product       Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  User          User?     @relation(fields: [userId], references: [id], onDelete: SetDefault)
+  Recycler      Recycler? @relation(fields: [recyclerId], references: [id], onDelete: SetDefault)
 }
 
 enum Role {

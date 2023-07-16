@@ -11,9 +11,6 @@ const THIRTY_DAYS = 30 * 24 * 60 * 60; // 30 days in seconds for session max age
 const THIRTY_MINUTES = 30 * 60; // 30 minutes in seconds for session update interval
 
 export const authOptions: NextAuthOptions = {
-  // session: {
-  //   strategy: 'jwt',
-  // },
   secret: process.env.NEXTAUTH_SECRET,
   adapter: PrismaAdapter(prisma),
   providers: [
