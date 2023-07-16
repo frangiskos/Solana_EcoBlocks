@@ -1,29 +1,5 @@
-// type RemoveUndefined<T> = {
-//   [P in keyof T]: Exclude<T[P], undefined>;
-// };
-
-// export function removeUndefined<T extends Record<string, unknown>>(obj: T): RemoveUndefined<T> {
-//   const copy = { ...obj };
-//   Object.keys(copy).forEach((key) => (copy[key as keyof T] === undefined ? delete copy[key as keyof T] : {}));
-//   return copy as RemoveUndefined<T>;
-// }
-
-// // returns the type of the object without the undefined properties
-// type DefinedOnly<T> = Pick<T, RequiredKeys<T>>;
-
-// type RequiredKeys<T> = {
-//     [K in keyof T]-?:
-//         ({} extends { [P in K]: T[K] } ? never : K)
-// } extends { [_ in keyof T]-?: infer U }
-//     ? U
-//     : never;
-
-// export function removeUndefined<T extends Record<string, unknown>>(obj: T): DefinedOnly<T> {
-//     const copy = { ...obj };
-//     Object.keys(copy).forEach((key) =>
-//         (copy[key as keyof T] === undefined ? delete copy[key as keyof T] : {}));
-//     return copy as DefinedOnly<T>;
-// }
+import { constants } from '@/constants';
+import { customAlphabet } from 'nanoid';
 
 export function removeUndefined<T extends Record<string, unknown>>(obj: T): Required<T> {
   const copy = { ...obj };
@@ -31,8 +7,20 @@ export function removeUndefined<T extends Record<string, unknown>>(obj: T): Requ
   return copy as Required<T>;
 }
 
-export function formatDate(date: Date) {
+export function formatDate(date: Date | string) {
+  if (typeof date === 'string') {
+    date = new Date(date);
+  }
   // var formattedDate = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium' }).format(date);
-  // var formattedDate = date.toLocaleDateString('en-US',{ year: 'numeric', month: 'short', day: 'numeric' });
+  // return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
   return date.toLocaleDateString();
+}
+
+export function generateCouponCodes(coupons: number): string[] {
+  const nanoid = customAlphabet('6789BCDFGHJKLMNPQRTWbcdfghjkmnpqrtwz', constants.COUPON_LENGTH);
+  const couponCodes = [];
+  for (let i = 0; i < coupons; i++) {
+    couponCodes.push(nanoid());
+  }
+  return couponCodes;
 }

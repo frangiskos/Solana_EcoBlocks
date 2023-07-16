@@ -1,3 +1,4 @@
+import { constants } from '@/constants';
 import { z } from 'zod';
 
 export const createSellerSchema = z.object({
@@ -13,6 +14,19 @@ export const createSellerSchema = z.object({
 });
 export type CreateSellerFormValue = z.infer<typeof createSellerSchema>;
 
+const totalCoupons = z
+  .number()
+  .int()
+  .min(1, 'At least one coupon is required')
+  .max(constants.MAX_COUPONS, `Cannot create more than ${constants.MAX_COUPONS} coupons`)
+  .or(
+    z
+      .string()
+      .refine((val) => !isNaN(+val) && Number.isInteger(Number(val)), {
+        message: 'Must be a valid integer',
+      })
+      .transform(Number)
+  );
 export const createProductSchema = z.object({
   name: z
     .string()
@@ -20,9 +34,15 @@ export const createProductSchema = z.object({
     .min(1, 'Product name is required')
     .min(3)
     .max(250, 'Product name cannot exceed 250 characters'),
-  validFrom: z.date(),
-  validTo: z.date(),
+  validFrom: z.string(),
+  validTo: z.string(),
+  totalCoupons: totalCoupons,
   couponTerms: z.string(),
-  coupons: z.array(z.string()).nonempty('At least one coupon is required'),
+  coupons: z.array(z.string()),
 });
 export type CreateProductFormValue = z.infer<typeof createProductSchema>;
+
+export const assignCouponSchema = z.object({
+  coupon: z.string().trim().length(10, 'Coupon code must be 10 characters long'),
+});
+export type AssignCouponFormValue = z.infer<typeof createSellerSchema>;

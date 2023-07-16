@@ -1,8 +1,7 @@
 import { db } from '@/utils/db';
-import { createProductSchema, createSellerSchema } from '@/utils/form-validations';
+import { createProductSchema } from '@/utils/form-validations';
 import { getUserFromSession } from '@/utils/session';
 import { removeUndefined } from '@/utils/utils';
-import { Product } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
 import { fromZodError } from 'zod-validation-error';
 
@@ -30,7 +29,9 @@ export async function POST(req: NextRequest, { params }: { params: { sellerId: s
   }
 
   const data = removeUndefined(parsed.data);
-  const { coupons, ...rest } = data;
+  const validFrom = new Date(data.validFrom);
+  const validTo = new Date(data.validTo);
+  const { coupons, ...rest } = { ...data, validFrom, validTo };
   const clean = removeUndefined(rest);
   const product = { ...clean, sellerId };
   return NextResponse.json(await db.products.create(product, coupons, user));

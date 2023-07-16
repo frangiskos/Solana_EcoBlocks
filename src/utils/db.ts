@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
-import { Product, Seller, User } from '@prisma/client';
+import { NestedCoupon } from '@/types';
+import { Coupon, Product, Seller, User } from '@prisma/client';
 
 export class db {
   static sellers = {
@@ -15,6 +16,12 @@ export class db {
     create: this.createProduct,
     update: this.updateProduct,
     delete: this.deleteProduct,
+  };
+
+  static consumers = {
+    getCoupons: this.getCoupons,
+    assignCoupon: this.assignCoupon,
+    removeCoupon: this.removeCoupon,
   };
 
   private static async getUserSellers(user: User): Promise<Seller[]> {
@@ -115,6 +122,9 @@ export class db {
     });
   }
 
+  /**
+   * PRODUCTS
+   */
   private static async getBusinessProducts(sellerId: string, user: User): Promise<Product[]> {
     const sellerUser = await prisma.userSeller.findFirst({
       where: {
@@ -175,7 +185,7 @@ export class db {
   }
 
   private static async updateProduct(
-    product: Omit<Product, 'createdAt' | 'updatedAt' | 'quantity'>,
+    product: Partial<Omit<Product, 'createdAt' | 'updatedAt' | 'quantity'>>,
     coupons: string[],
     user: User
   ): Promise<Product> {
@@ -236,6 +246,85 @@ export class db {
     return await prisma.product.delete({
       where: {
         id: productId,
+      },
+    });
+  }
+
+  /**
+   * CONSUMERS
+   */
+  private static async getCoupons(user: User): Promise<NestedCoupon[]> {
+    return await prisma.coupon.findMany({
+      include: {
+        Product: {
+          include: {
+            Seller: true,
+          },
+        },
+      },
+      where: {
+        userId: user.id,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
+
+  private static async assignCoupon(code: string, user: User): Promise<Coupon> {
+    const coupon = await prisma.coupon.findFirst({
+      where: {
+        code,
+      },
+    });
+
+    if (!coupon) {
+      throw new Error('Coupon does not exist');
+    }
+
+    if (coupon.userId === user.id) {
+      throw new Error('Coupon already assigned to user');
+    }
+
+    if (coupon.status !== 'New') {
+      throw new Error('Coupon already assigned to another user');
+    }
+
+    return await prisma.coupon.update({
+      where: {
+        code: coupon.code,
+      },
+      data: {
+        userId: user.id,
+        status: 'Assigned',
+        assignedAt: new Date(),
+      },
+    });
+  }
+
+  private static async removeCoupon(code: string, user: User): Promise<Coupon> {
+    const coupon = await prisma.coupon.findFirst({
+      where: {
+        code,
+      },
+    });
+
+    if (!coupon) {
+      throw new Error('Coupon does not exist');
+    }
+
+    if (coupon.userId !== user.id) {
+      throw new Error('Coupon is not assigned to user');
+    }
+
+    return prisma.coupon.update({
+      where: {
+        code,
+      },
+      data: {
+        userId: null,
+        status: 'New',
+        assignedAt: null,
       },
     });
   }

@@ -27,6 +27,7 @@
     "eslint-config-next": "13.4.9",
     "flowbite": "^1.7.0",
     "flowbite-react": "^0.4.11",
+    "nanoid": "^4.0.2",
     "next": "13.4.9",
     "next-auth": "^4.22.1",
     "postcss": "8.4.25",
